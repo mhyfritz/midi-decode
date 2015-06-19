@@ -1,4 +1,4 @@
-#! /usr/bin/env/node
+#! /usr/bin/env node
 
 'use strict';
 
@@ -15,14 +15,14 @@ if (process.argv.length < 3) {
 var recs = []
 
 for (let i = 2; i < process.argv.length; i++) {
-  let x = parseInt(process.argv[i]);
+  let x = parseInt(process.argv[i], 10);
   if (x < 0 || x > 255) {
     console.log('error: %d not in range [0, 255]', x);
     process.exit(1);
   }
   let rec = {
     inputDecimal: x,
-    inputBinary: binaryPadded(x),
+    inputBinary: binaryByte(x),
     isStatusByte: false,
     isDataByte: false,
     isNoteOn: false,
@@ -47,12 +47,12 @@ for (let i = 2; i < process.argv.length; i++) {
 
 console.log(JSON.stringify(recs, null, 2));
 
-function binaryPadded(x) {
+function binaryByte(x) {
   var res = x.toString(2);
   var padLength = 8 - res.length;
-  return charRepeat("0", padLength) + res;
+  return stringRepeat('0', padLength) + res;
 }
 
-function charRepeat(c, n) {
-  return Array(n+1).join(c);
+function stringRepeat(s, n) {
+  return Array(n + 1).join(s);
 }
