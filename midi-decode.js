@@ -7,22 +7,21 @@ var noteOnBit = 1 << 4;
 var statusMask = 0xF;
 var notes = 'C C# D D# E F F# G G# A A# B'.split(' ');
 
-if (process.argv.length < 3) {
-  console.log('Usage: %s <byte> [<byte2> ...]', process.argv[1]);
-  process.exit(2)
+if (require.main === module) {
+  main();
+} else {
+  module.exports = {
+    parseByte: parseByte
+  };
 }
 
-var recs = []
-
-for (let i = 2; i < process.argv.length; i++) {
-  let x = parseInt(process.argv[i], 10);
+function parseByte(x) {
   if (x < 0 || x > 255) {
-    console.log('error: %d not in range [0, 255]', x);
-    process.exit(1);
+    throw new ByteException(x);
   }
-  let rec = {
+  var rec = {
     inputDecimal: x,
-    inputBinary: binaryByte(x),
+    inputBinary: paddedByteString(x),
     isStatusByte: false,
     isDataByte: false,
     isNoteOn: false,
@@ -42,12 +41,10 @@ for (let i = 2; i < process.argv.length; i++) {
     rec.value = x;
     rec.note = notes[x % notes.length];
   }
-  recs.push(rec);
+  return rec;
 }
 
-console.log(JSON.stringify(recs, null, 2));
-
-function binaryByte(x) {
+function paddedByteString(x) {
   var res = x.toString(2);
   var padLength = 8 - res.length;
   return stringRepeat('0', padLength) + res;
@@ -55,4 +52,34 @@ function binaryByte(x) {
 
 function stringRepeat(s, n) {
   return Array(n + 1).join(s);
+}
+function ByteException(value) {
+  this.value = value;
+  this.message = 'not in range [0, 255]';
+  this.toString = function() {
+    return 'ByteException: ' + this.value + ' ' + this.message;
+  };
+}
+
+function main() {
+  if (process.argv.length < 3) {
+    console.log('Usage: %s <byte> [<byte2> ...]', process.argv[1]);
+    process.exit(2)
+  }
+
+  var recs = [];
+  var i;
+  var x;
+
+  for (i = 2; i < process.argv.length; i++) {
+    x = parseInt(process.argv[i], 10);
+    try {
+      recs.push(parseByte(x));
+    } catch (e) {
+      console.log(e.toString());
+      process.exit(1);
+    }
+  }
+
+  console.log(JSON.stringify(recs, null, 2));
 }
