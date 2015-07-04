@@ -27,6 +27,7 @@ function parseByte(x) {
     isNoteOn: false,
     isNoteOff: false,
     note: null,
+    octave: null
   };
   if (x & statusBit) {
     rec.isStatusByte = true;
@@ -40,6 +41,7 @@ function parseByte(x) {
     rec.isDataByte = true;
     rec.value = x;
     rec.note = notes[x % notes.length];
+    rec.octave = Math.floor(x / notes.length);
   }
   return rec;
 }
